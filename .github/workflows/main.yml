@@ -22,7 +22,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -32,11 +32,22 @@ jobs:
         with:
           version: master
 
-      - name: Build
-        run: zig build
+      # Other than Windows
 
       - name: Run Tests with filesystem
         run: zig build test -Din_memory=false
+        if: ${{ runner.os != 'Windows' }}
 
       - name: Run Tests in memory
         run: zig build test -Din_memory=true
+        if: ${{ runner.os != 'Windows' }}
+
+      # Windows only
+
+      - name: Run Tests with filesystem
+        run: zig build test -Din_memory=false -Duse_bundled=true
+        if: ${{ runner.os == 'Windows' }}
+
+      - name: Run Tests in memory
+        run: zig build test -Din_memory=true -Duse_bundled=true
+        if: ${{ runner.os == 'Windows' }}
